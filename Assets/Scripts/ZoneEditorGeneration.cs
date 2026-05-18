@@ -68,6 +68,7 @@ public class ZoneEditorGeneration : EditorWindow
         }
     }
 
+    #region Generate Zone From Scene
     private static void GenerateZoneFromScene() {
         Scene scene = EditorSceneManager.GetActiveScene();
         if (!scene.IsValid() || !scene.isLoaded)
@@ -207,7 +208,120 @@ public class ZoneEditorGeneration : EditorWindow
 
     }
 
-    private static void GenerateSceneFromZone() { }
+    #endregion
+
+    #region Generate Scene From Zone
+    private static void GenerateSceneFromZone() {
+        if(zoneConfig == null)
+        {
+            EditorUtility.DisplayDialog("Generate Scene from Zone", "Assign a zone config asset.", "Ok");
+            return;
+        }
+
+        if(zoneConfig.SpawnEntries == null || zoneConfig.SpawnEntries.Count == 0)
+        {
+            Debug.LogWarning("Zone Config has no Spawn Entries.");
+            return;
+        }
+
+        var scene = EditorSceneManager.GetActiveScene();
+        if(scene == null)
+        {
+            Debug.LogWarning("No active Loaded Scene");
+            return;
+        }
+
+        var worldGO = GameObject.Find("World");
+        Transform parent;
+        if (worldGO == null)
+        {
+            parent = new GameObject("World").transform;
+        }
+        else
+        {
+            parent = worldGO.transform;
+        }
+
+        //Handle with Ctrl-Z errors
+        var undoBatch = Undo.GetCurrentGroup();
+        Undo.IncrementCurrentGroup();
+        Undo.SetCurrentGroupName("Generate Scene From Zone");
+
+        int ok = 0;
+        int skipped = 0;
+
+        foreach(SpawnEntry entry in zoneConfig.SpawnEntries)
+        {
+            if(!TryResolvePrefab(entry, out var prefabPath, out var prefab))
+            {
+                Debug.LogWarning($"Skip: '{entry.Name}': Unresolved prefab (AssetReference not bound to asset).");
+                skipped++;
+                continue;
+            }
+
+            GameObject instance = PrefabUtility.InstantiatePrefab(prefab, parent) as GameObject;
+            if(instance == null)
+            {
+                Debug.LogWarning($"Skip: '{entry.Name}': InstantiatePrefab returned null ({prefabPath}).");
+                skipped++;
+                continue;
+            }
+
+            Undo.RegisterCreatedObjectUndo(instance, $"Spawn '{entry.Name}'");
+            Undo.RecordObject(instance.transform, "Apply zone spawn transform");
+
+            instance.transform.position = entry.Position;
+            instance.transform.rotation = Quaternion.Euler(entry.Rotation);
+            instance.transform.localScale = entry.Scaling;
+            instance.name = entry.Name;
+
+            if(entry.LayerIndex >= 0 && entry.LayerIndex <= 31)
+            {
+                instance.layer = entry.LayerIndex;
+            }
+
+            if (!string.IsNullOrEmpty(entry.Tag))
+            {
+                try
+                {
+                    instance.tag = entry.Tag;
+                }
+                catch (UnityException)
+                {
+                    Debug.LogWarning($"Tag '{entry.Tag}' is not defined - '{instance.name}' left untagged");
+                }
+            }
+
+            EditorUtility.SetDirty(instance);
+            ok++;
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        Undo.CollapseUndoOperations(undoBatch);
+    }
+
+    private static bool TryResolvePrefab(SpawnEntry entry, out string assetPath, out GameObject prefab)
+    {
+        assetPath = null;
+        prefab = null;
+
+        if(entry?.PrefabReference == null || string.IsNullOrEmpty(entry.PrefabReference.AssetGUID))
+        {
+            return false;
+        }
+
+        assetPath = AssetDatabase.GUIDToAssetPath(entry.PrefabReference.AssetGUID);
+        if (string.IsNullOrEmpty(assetPath))
+        {
+            return false;
+        }
+
+        prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+        return prefab != null;
+
+    }
+    #endregion
+
     private static void RecalculateSizeTier() { }
 
 

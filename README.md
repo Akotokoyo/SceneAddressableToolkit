@@ -58,12 +58,12 @@ Available controls:
 - `Include Children`: include recursive traversal of child transforms.
 - `Zone Name`: output config name.
 - `Zone Id`: output numeric id.
-- `Zone Config`: input for reverse generation (currently placeholder).
+- `Zone Config`: source config used to rebuild scene objects.
 
 Buttons:
 
 - `Generate Zone from Scene` (implemented)
-- `Generate Scene from Zone` (planned)
+- `Generate Scene from Zone` (implemented)
 - `Recaulculate Size Tier` (planned)
 
 ### Generate Zone from Scene behavior
@@ -88,6 +88,26 @@ Notes:
 - Only prefab instances are collected.
 - Non-addressable prefabs are currently logged with a warning.
 
+### Generate Scene from Zone behavior
+
+Current implementation:
+
+1. Requires a valid `ZoneConfig` assigned in the editor window.
+2. Validates that `SpawnEntries` is not empty.
+3. Uses the active scene and ensures a `World` parent exists (creates it if missing).
+4. Resolves each `SpawnEntry.PrefabReference` GUID to a prefab asset path.
+5. Instantiates prefabs under `World` and applies:
+   - `Position`, `Rotation`, `Scaling`
+   - object `Name`
+   - `LayerIndex` (if in valid Unity range `0..31`)
+   - `Tag` (with warning if tag does not exist in project settings)
+6. Registers operations in Unity Undo and marks the scene dirty.
+
+Notes:
+
+- Entries with unresolved/missing prefabs are skipped with warnings.
+- The generation currently focuses on transforms + basic object metadata.
+
 ## Recommended workflow (current MVP)
 
 1. Create a `ZoneConfig` asset (Create > ScriptableObject, if a dedicated menu exists in the project).
@@ -99,7 +119,6 @@ Notes:
 ## Known gaps / next steps
 
 - The toolkit and documentation are still in an early stage.
-- Two editor actions are intentionally still TODO:
-  - `GenerateSceneFromZone()`
+- Remaining TODO editor action:
   - `RecalculateSizeTier()`
 - Useful next additions: runtime loading/unloading examples, validation pipeline, and naming conventions.
