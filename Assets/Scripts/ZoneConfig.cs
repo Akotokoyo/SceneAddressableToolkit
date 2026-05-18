@@ -7,7 +7,7 @@ public class ZoneConfig : ScriptableObject
     public string ZoneName;
     public int ZoneId;
     public AssetReference MapReference;
-    [SerializeField] List<SpawnEntry> SpawnEntries = new();
+    public List<SpawnEntry> SpawnEntries = new();
 
 
     [Tooltip("Zone Dimension Scale")]
