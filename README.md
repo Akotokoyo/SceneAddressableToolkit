@@ -64,7 +64,7 @@ Buttons:
 
 - `Generate Zone from Scene` (implemented)
 - `Generate Scene from Zone` (implemented)
-- `Recaulculate Size Tier` (planned)
+- `Recaulculate Size Tier` (implemented)
 
 ### Generate Zone from Scene behavior
 
@@ -108,6 +108,16 @@ Notes:
 - Entries with unresolved/missing prefabs are skipped with warnings.
 - The generation currently focuses on transforms + basic object metadata.
 
+### Recaulculate Size Tier behavior
+
+Current implementation:
+
+1. Requires a valid `ZoneConfig` assigned in the editor window.
+2. Validates that `SpawnEntries` is not empty.
+3. Recomputes `sizeTier` using `ZonSizeTierClassification.GetSizeFromEntries(...)`.
+4. Marks the `ZoneConfig` asset dirty and saves project assets.
+5. Logs the resulting tier and entry count.
+
 ## Recommended workflow (current MVP)
 
 1. Create a `ZoneConfig` asset (Create > ScriptableObject, if a dedicated menu exists in the project).
@@ -119,6 +129,4 @@ Notes:
 ## Known gaps / next steps
 
 - The toolkit and documentation are still in an early stage.
-- Remaining TODO editor action:
-  - `RecalculateSizeTier()`
 - Useful next additions: runtime loading/unloading examples, validation pipeline, and naming conventions.

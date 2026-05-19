@@ -116,6 +116,7 @@ public class ZoneEditorGeneration : EditorWindow
             }
         }
 
+        zoneConfig.sizeTier = ZonSizeTierClassification.GetSizeFromEntries(config.SpawnEntries.Count);
 
         //Create the scriptableAsset
         AssetDatabase.CreateAsset(config, savePath);
@@ -322,7 +323,25 @@ public class ZoneEditorGeneration : EditorWindow
     }
     #endregion
 
-    private static void RecalculateSizeTier() { }
+    private static void RecalculateSizeTier() {
+        if (zoneConfig == null)
+        {
+            EditorUtility.DisplayDialog("Recalculate Size Tier", "Assign a zone config asset.", "Ok");
+            return;
+        }
+
+        if (zoneConfig.SpawnEntries == null || zoneConfig.SpawnEntries.Count == 0)
+        {
+            Debug.LogWarning("Zone Config has no Spawn Entries.");
+            return;
+        }
+
+        zoneConfig.sizeTier = ZonSizeTierClassification.GetSizeFromEntries(zoneConfig.SpawnEntries.Count);
+        EditorUtility.SetDirty(zoneConfig);
+        AssetDatabase.SaveAssets();
+
+        Debug.Log($"Recalculate Size Tier for '{zoneConfig.name}': {zoneConfig.sizeTier} (Entries: {zoneConfig.SpawnEntries.Count}");
+    }
 
 
 }
