@@ -116,7 +116,7 @@ public class ZoneEditorGeneration : EditorWindow
             }
         }
 
-        zoneConfig.sizeTier = ZonSizeTierClassification.GetSizeFromEntries(config.SpawnEntries.Count);
+        config.sizeTier = ZonSizeTierClassification.GetSizeFromEntries(config.SpawnEntries.Count);
 
         //Create the scriptableAsset
         AssetDatabase.CreateAsset(config, savePath);

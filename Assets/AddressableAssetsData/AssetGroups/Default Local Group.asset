@@ -17,8 +17,18 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 60a017e38c74e3840a2429b1cb072ebc
   m_SerializeEntries:
-  - m_GUID: 248c2d58917855c41bfc78d45a8f9638
-    m_Address: Assets/Prefabs/CubePrefab.prefab
+  - m_GUID: 0dde2d3d0f35d2c4f90aa85e6fca64e8
+    m_Address: Assets/Prefabs/Sphere_LOD.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f50e5106345f7f4db5411e16ee561e4
+    m_Address: Assets/Prefabs/Capsule_LOD.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a243ca55ce2dfd841b4233aa720d14a5
+    m_Address: Assets/Prefabs/Cube_LOD.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
