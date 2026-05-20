@@ -8,6 +8,7 @@ At the moment, the project includes:
 
 - `ZoneConfig`: runtime-ready zone data container.
 - `ZoneEditorGeneration`: editor window to generate zone data from the current scene.
+- `SpawnerManager`: runtime spawner that instantiates Addressable prefabs from a `ZoneConfig`.
 
 The goal is to centralize zone metadata and spawn content in a single asset for open-world and level-design workflows.
 
@@ -118,13 +119,36 @@ Current implementation:
 4. Marks the `ZoneConfig` asset dirty and saves project assets.
 5. Logs the resulting tier and entry count.
 
+## Runtime tooling
+
+### SpawnerManager (`Assets/Scripts/SpawnerManager.cs`)
+
+`SpawnerManager` is a `MonoBehaviour` that reads a `ZoneConfig` and instantiates all spawn entries through Addressables.
+
+Current implementation:
+
+1. On `Start()`, checks if `zoneConfig` is assigned.
+2. Calls `LoadZoneConfig(zoneConfig)`.
+3. Iterates `SpawnEntries`.
+4. Starts one coroutine per entry.
+5. Uses `Addressables.InstantiateAsync(entry.PrefabReference)`.
+6. On success, applies:
+   - `Position`, `Rotation`, `Scaling`
+   - object `Name`
+
+Notes:
+
+- If no config is assigned, loading is skipped with a warning.
+- If `SpawnEntries` is null/empty, load exits early.
+- Current runtime path does not yet apply optional metadata such as tag/layer/LOD/culling overrides.
+
 ## Recommended workflow (current MVP)
 
 1. Create a `ZoneConfig` asset (Create > ScriptableObject, if a dedicated menu exists in the project).
 2. Set `ZoneName`, `ZoneId`, and `MapReference`.
 3. (Optional) Use `ZoneEditorGeneration` to auto-generate `SpawnEntries` from the scene.
 4. Set or compute `sizeTier` based on the number of elements.
-5. Use the asset as a data source in zone streaming/loading systems.
+5. Assign the config to `SpawnerManager.zoneConfig` (or call `LoadZoneConfig(...)`) to spawn content at runtime.
 
 ## Known gaps / next steps
 
