@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -113,10 +112,12 @@ public class SpawnerManager : MonoBehaviour
 
         if(maxConcurrentAddressableLoads <= 0)
         {
+            int pending = entries.Count;
             foreach(var e in entries)
             {
-                StartCoroutine(LoadAddressable(e));
+                StartCoroutine(RunLoadThenRelease(e, () => pending--));
             }
+            yield return new WaitUntil(() => pending <= 0);
             yield break;
         }
 
@@ -161,6 +162,8 @@ public class SpawnerManager : MonoBehaviour
             instantiateObject.transform.rotation = Quaternion.Euler(entry.Rotation);
             instantiateObject.transform.localScale = entry.Scaling;
             instantiateObject.name = entry.Name;
+
+            zoneLODManager?.RegisterSpawnedObject(instantiateObject, entry);
         }
     }
 

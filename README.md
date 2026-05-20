@@ -1,156 +1,216 @@
 # SceneAddressableToolkit
 
-Unity toolkit to describe a game zone with a `ScriptableObject` and Addressables references.
+![Unity](https://img.shields.io/badge/Unity-2022.3.58f1-black?logo=unity)
+![Addressables](https://img.shields.io/badge/Addressables-1.22.3-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## Current status
+A Unity editor + runtime toolkit for open-world and level-design pipelines.  
+Convert a scene into a data-driven `ZoneConfig` asset (and back), then stream it at runtime with **prioritized chunk loading** and **distance-based culling**.
 
-At the moment, the project includes:
+---
 
-- `ZoneConfig`: runtime-ready zone data container.
-- `ZoneEditorGeneration`: editor window to generate zone data from the current scene.
-- `SpawnerManager`: runtime spawner that instantiates Addressable prefabs from a `ZoneConfig`.
+## Overview
 
-The goal is to centralize zone metadata and spawn content in a single asset for open-world and level-design workflows.
+Managing large numbers of objects in open-world scenes is painful — prefabs scattered across the hierarchy, no easy way to version or stream them, and LOD handled ad-hoc.
 
-## Core data model
+**SceneAddressableToolkit** solves this by:
 
-### ZoneConfig (`Assets/Scripts/ZoneConfig.cs`)
+1. **Baking** a scene into a `ZoneConfig` ScriptableObject: one asset that describes every Addressable prefab in the zone (position, rotation, scale, culling, LOD metadata).
+2. **Restoring** a scene from a `ZoneConfig` at edit time, with full Undo support.
+3. **Streaming** the zone at runtime — critical objects near the player load first, the rest follow.
+4. **Culling** spawned objects by distance with hysteresis so they activate/deactivate smoothly without flickering.
 
-Main fields:
+---
 
-- `ZoneName`: readable zone name.
-- `ZoneId`: numeric zone id.
-- `MapReference`: Addressables reference for the main map.
-- `SpawnEntries`: serialized list of objects to spawn in the zone.
-- `sizeTier`: zone size classification (`NONE`, `SMALL`, `MEDIUM`, `BIG`).
+## Requirements
+
+| Dependency | Version |
+|------------|---------|
+| Unity | 2022.3.58f1 (LTS) |
+| Addressables | 1.22.3 |
+
+All prefabs intended for use with this toolkit must be registered as **Addressable assets**.
+
+---
+
+## Installation
+
+1. Clone or download this repository into your Unity project root.
+2. Open the project in Unity 2022.3.58f1.
+3. Ensure `com.unity.addressables 1.22.3` is present in `Packages/manifest.json` (it is, if you cloned this repo).
+4. Open `Window > Asset Management > Addressables > Groups` and confirm your prefabs are registered.
+
+---
+
+## Quick start
+
+### Scene → ZoneConfig (bake)
+
+1. Open the scene you want to bake.
+2. Go to `ToolKit > Generate Config Zone Form and To Scene`.
+3. Fill in **Zone Name** and **Zone Id**.
+4. Click **Generate Zone from Scene** and pick a save path.
+5. Done — a `.asset` file now describes your entire zone.
+
+### ZoneConfig → Scene (restore)
+
+1. Open the target scene.
+2. Open the same toolkit window and assign the `.asset` to the **Zone Config** field.
+3. Click **Generate Scene from Zone**.
+4. All prefabs are instantiated under a `World` root. Use **Ctrl+Z** to undo everything in one step.
+
+### Runtime streaming
+
+1. Add `SpawnerManager` and `ZoneLODManager` to a GameObject.
+2. Assign the `ZoneConfig` asset and the player `Transform` to `SpawnerManager`.
+3. Press Play — objects near the player load first, distant objects follow, culling is automatic.
+
+---
+
+## Architecture
+
+```
+Assets/Scripts/
+├── Zone/
+│   ├── ZoneConfig.cs          # ScriptableObject — zone data container
+│   ├── ZoneEditorGeneration.cs # Editor window (bake / restore / recalculate tier)
+│   └── ZoneChunkUtility.cs    # Static helpers: WorldToChunkXZ, ChebyshevDistance
+└── Managers/
+    ├── SpawnerManager.cs      # Runtime loader with chunk prioritization
+    └── ZoneLODManager.cs      # Distance culling with hysteresis
+```
+
+---
+
+## Data model
+
+### ZoneConfig
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ZoneName` | `string` | Readable zone name. |
+| `ZoneId` | `int` | Numeric zone identifier. |
+| `MapReference` | `AssetReference` | Addressables reference to the main map asset. |
+| `SpawnEntries` | `List<SpawnEntry>` | All objects in the zone. |
+| `sizeTier` | `ZoneSizeTier` | Auto-computed size class (`NONE` / `SMALL` / `MEDIUM` / `BIG`). |
+| `ChunkSizeWorld` | `float` | World-space chunk cell size (XZ). `<= 0` disables chunk partitioning. |
+| `ChunkGridOrigin` | `Vector3` | World-space origin of the chunk grid. |
+| `InitialLoadChunkRing` | `int` | Chebyshev ring around the player chunk loaded in the critical wave. `2` = 5×5 chunks. |
 
 ### SpawnEntry
 
-Each spawn entry contains:
-
-- `Name`: logical entry name.
-- `PrefabReference`: Addressables prefab reference to instantiate.
-- `Position`, `Rotation`, `Scaling`: initial transform values.
-- `Tag`, `LayerIndex`: gameplay/render metadata.
-- `HasLodOverride`, `LodOverride`: optional LOD override.
-- `HasCullingDistance`, `CullingDistance`: optional culling-distance override.
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Object name. |
+| `PrefabReference` | `AssetReference` | Addressables prefab reference. |
+| `Position` / `Rotation` / `Scaling` | `Vector3` | World transform. |
+| `Tag` / `LayerIndex` | `string` / `int` | Gameplay and render metadata. |
+| `HasLodOverride` / `LodOverride` | `bool` / `int` | Optional LOD level override. |
+| `HasCullingDistance` / `CullingDistance` | `bool` / `float` | Optional per-object culling distance. |
 
 ### ZoneSizeTier
 
-Size enum:
+| Value | Entry count |
+|-------|-------------|
+| `NONE` | Unclassified |
+| `SMALL` | < 1 000 |
+| `MEDIUM` | < 10 000 |
+| `BIG` | ≥ 10 000 |
 
-- `NONE`: no classification.
-- `SMALL`: small zone.
-- `MEDIUM`: medium zone.
-- `BIG`: large zone.
-
-The `ZonSizeTierClassification` class includes helper thresholds to classify a zone by number of entries.
+---
 
 ## Editor tooling
 
-### ZoneEditorGeneration (`Assets/Scripts/ZoneEditorGeneration.cs`)
+### ZoneEditorGeneration
 
-Open from Unity menu:
+Menu path: `ToolKit > Generate Config Zone Form and To Scene`
 
-- `ToolKit/Generate Config Zone Form and To Scene`
+#### Generate Zone from Scene
+- Scans children of a `World` root object, or all scene roots if none exists.
+- Skips `EditorOnly`-tagged objects.
+- Only collects prefab instances with a valid Addressables entry (others are warned).
+- Applies tag-based culling defaults (e.g. `Building` → culling distance 180 u).
+- Computes and writes `sizeTier` automatically.
 
-Available controls:
+#### Generate Scene from Zone
+- Instantiates all `SpawnEntry` prefabs under a `World` parent.
+- Applies transform, name, layer, and tag per entry.
+- Fully undoable with a single Ctrl+Z.
 
-- `Include Children`: include recursive traversal of child transforms.
-- `Zone Name`: output config name.
-- `Zone Id`: output numeric id.
-- `Zone Config`: source config used to rebuild scene objects.
+#### Recalculate Size Tier
+- Recomputes `sizeTier` on the assigned `ZoneConfig` from the current entry count.
 
-Buttons:
-
-- `Generate Zone from Scene` (implemented)
-- `Generate Scene from Zone` (implemented)
-- `Recaulculate Size Tier` (implemented)
-
-### Generate Zone from Scene behavior
-
-Current implementation:
-
-1. Reads the active loaded scene.
-2. Asks where to save the generated `ZoneConfig` asset.
-3. Creates a new `ZoneConfig` and fills `ZoneId` + `SpawnEntries`.
-4. Scans either:
-   - children of a root object named `World`, if present, or
-   - all scene root objects otherwise.
-5. Skips objects tagged `EditorOnly`.
-6. Converts prefab instances into `SpawnEntry` records using:
-   - prefab Addressables GUID (`AssetReference`)
-   - world transform values
-   - tag-based defaults (example: `Building` sets culling distance)
-7. Saves the asset into the project.
-
-Notes:
-
-- Only prefab instances are collected.
-- Non-addressable prefabs are currently logged with a warning.
-
-### Generate Scene from Zone behavior
-
-Current implementation:
-
-1. Requires a valid `ZoneConfig` assigned in the editor window.
-2. Validates that `SpawnEntries` is not empty.
-3. Uses the active scene and ensures a `World` parent exists (creates it if missing).
-4. Resolves each `SpawnEntry.PrefabReference` GUID to a prefab asset path.
-5. Instantiates prefabs under `World` and applies:
-   - `Position`, `Rotation`, `Scaling`
-   - object `Name`
-   - `LayerIndex` (if in valid Unity range `0..31`)
-   - `Tag` (with warning if tag does not exist in project settings)
-6. Registers operations in Unity Undo and marks the scene dirty.
-
-Notes:
-
-- Entries with unresolved/missing prefabs are skipped with warnings.
-- The generation currently focuses on transforms + basic object metadata.
-
-### Recaulculate Size Tier behavior
-
-Current implementation:
-
-1. Requires a valid `ZoneConfig` assigned in the editor window.
-2. Validates that `SpawnEntries` is not empty.
-3. Recomputes `sizeTier` using `ZonSizeTierClassification.GetSizeFromEntries(...)`.
-4. Marks the `ZoneConfig` asset dirty and saves project assets.
-5. Logs the resulting tier and entry count.
+---
 
 ## Runtime tooling
 
-### SpawnerManager (`Assets/Scripts/SpawnerManager.cs`)
+### SpawnerManager
 
-`SpawnerManager` is a `MonoBehaviour` that reads a `ZoneConfig` and instantiates all spawn entries through Addressables.
+| Inspector field | Description |
+|-----------------|-------------|
+| `zoneConfig` | Zone to load on `Start`. Overridable via `LoadZoneConfig(config)`. |
+| `zoneLODManager` | Auto-resolved via `FindObjectOfType` if not assigned. |
+| `playerTransform` | Determines player chunk and load-order sort origin. |
+| `maxConcurrentAddressableLoads` | Max parallel Addressables operations. `0` = unlimited (wave order still respected). |
 
-Current implementation:
+**Load flow:**
 
-1. On `Start()`, checks if `zoneConfig` is assigned.
-2. Calls `LoadZoneConfig(zoneConfig)`.
-3. Iterates `SpawnEntries`.
-4. Starts one coroutine per entry.
-5. Uses `Addressables.InstantiateAsync(entry.PrefabReference)`.
-6. On success, applies:
-   - `Position`, `Rotation`, `Scaling`
-   - object `Name`
+```
+playerTransform == null  →  flat load, sorted from world origin (0,0,0)
+ChunkSizeWorld <= 0      →  flat load, sorted from player position
+otherwise                →  staged load:
+                              1. critical wave  (chunks within InitialLoadChunkRing)
+                              2. deferred wave  (everything else)
+                            → each wave sorted by distance, limited by maxConcurrentAddressableLoads
+                            → deferred starts only after critical is fully complete
+```
 
-Notes:
+After each successful spawn, the instance is automatically registered with `ZoneLODManager`.
 
-- If no config is assigned, loading is skipped with a warning.
-- If `SpawnEntries` is null/empty, load exits early.
-- Current runtime path does not yet apply optional metadata such as tag/layer/LOD/culling overrides.
+### ZoneLODManager
 
-## Recommended workflow (current MVP)
+| Inspector field | Description |
+|-----------------|-------------|
+| `playerTransform` | Auto-resolved from `GameObject.FindGameObjectWithTag("Player")`. |
+| `updateInterval` | Seconds between culling passes (default `0.3`). |
+| `reactivateDistanceMultiplier` | Fraction of culling distance at which a culled object reactivates (default `0.9`). |
 
-1. Create a `ZoneConfig` asset (Create > ScriptableObject, if a dedicated menu exists in the project).
-2. Set `ZoneName`, `ZoneId`, and `MapReference`.
-3. (Optional) Use `ZoneEditorGeneration` to auto-generate `SpawnEntries` from the scene.
-4. Set or compute `sizeTier` based on the number of elements.
-5. Assign the config to `SpawnerManager.zoneConfig` (or call `LoadZoneConfig(...)`) to spawn content at runtime.
+**Culling rules (per tracked object, evaluated in squared-distance space):**
 
-## Known gaps / next steps
+- Deactivated when `distance > CullingDistance`.
+- Reactivated when `distance < CullingDistance × reactivateDistanceMultiplier`.
+- Objects with `HasCullingDistance = false` or `CullingDistance <= 0` are never culled.
+- Destroyed instances are automatically pruned from the tracking list.
 
-- The toolkit and documentation are still in an early stage.
-- Useful next additions: runtime loading/unloading examples, validation pipeline, and naming conventions.
+**Public API:**
+
+```csharp
+// Called automatically by SpawnerManager after each successful spawn.
+lodManager.RegisterSpawnedObject(gameObject, spawnEntry);
+
+// Remove a single object (e.g. on manual destroy).
+lodManager.UnRegisterSpawnedObject(gameObject);
+
+// Clear all tracked objects (e.g. on zone unload).
+lodManager.ClearTrackedObjects();
+```
+
+---
+
+## Design notes
+
+### LOD via positional objects
+
+The toolkit does not use Unity's built-in `LODGroup` component. Instead, LOD variants are treated as **separate `SpawnEntry` records placed at different world positions**.
+
+This was an intentional choice: the reference scene used during development contained purchased 3D assets whose licenses do not allow redistribution. To keep the repository self-contained and publicly shareable, LOD meshes could not be bundled — so the LOD system was designed around distance-based activation/deactivation of independent objects rather than mesh-level LOD switching.
+
+The `HasLodOverride` / `LodOverride` fields on `SpawnEntry` are reserved for future per-entry LOD group control once suitable free assets are available.
+
+---
+
+## Limitations / roadmap
+
+- `HasLodOverride` / `LodOverride` runtime application is not yet implemented (see design note above).
+- Chunk loading is one-shot at scene start; dynamic streaming (load/unload as the player moves) is not yet implemented.
+- No built-in zone unloading — releasing Addressables handles on exit is left to the consumer.

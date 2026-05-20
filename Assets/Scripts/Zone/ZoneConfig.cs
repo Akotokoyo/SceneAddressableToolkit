@@ -60,6 +60,6 @@ public static class ZonSizeTierClassification
             return ZoneSizeTier.SMALL;
         if (entryCount < MediumMaxEntriesInclusive)
             return ZoneSizeTier.MEDIUM;
-        return ZoneSizeTier.NONE;
+        return ZoneSizeTier.BIG;
     }
 }

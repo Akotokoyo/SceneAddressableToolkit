@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
-
 public class ZoneLODManager : MonoBehaviour
 {
     [SerializeField] private Transform playertransform;
@@ -70,7 +68,7 @@ public class ZoneLODManager : MonoBehaviour
 
     private void UpdateCulling()
     {
-        for(int i = 0; i< trackedObject.Count -1; i++)
+        for(int i = trackedObject.Count - 1; i >= 0; i--)
         {
             TrackedSpawnedObject tracked = trackedObject[i];
 
@@ -91,12 +89,12 @@ public class ZoneLODManager : MonoBehaviour
             float reactivateDistance = cullingDistance * reactivateDistanceMultiplier;
             float reactiveDistanceSqr = reactivateDistance * reactivateDistance;
 
-            if(!tracked.IsCulled && sqrDistance > cullingDistance)
+            if(!tracked.IsCulled && sqrDistance > cullingDistanceSqr)
             {
                 tracked.Instance.SetActive(false);
                 tracked.IsCulled = true;
             }
-            else if(tracked.IsCulled && sqrDistance < cullingDistance)
+            else if(tracked.IsCulled && sqrDistance < reactiveDistanceSqr)
             {
                 tracked.Instance.SetActive(true);
                 tracked.IsCulled = false;
