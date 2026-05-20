@@ -13,6 +13,14 @@ public class ZoneConfig : ScriptableObject
     [Tooltip("Zone Dimension Scale")]
     public ZoneSizeTier sizeTier = ZoneSizeTier.NONE;
 
+    //Cell size in horizontal plane, if <=0, spawner will ignore the partitionament of chunk
+    public float ChunkSizeWorld = 128f;
+
+    //Grid Origin
+    public Vector3 ChunkGridOrigin = Vector3.zero;
+
+    //Chebyshev max chunk from player chunk, inside the first ring, will load the first wave, es. 2 = square 5x5 chunks
+    public int InitialLoadChunkRing = 2;
 }
 
 [System.Serializable]

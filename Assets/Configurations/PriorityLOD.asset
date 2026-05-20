@@ -1,0 +1,206 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c37fab1d7525e345ae26db169619c4a, type: 3}
+  m_Name: PriorityLOD
+  m_EditorClassIdentifier: 
+  ZoneName: 
+  ZoneId: -1
+  MapReference:
+    m_AssetGUID: 
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  SpawnEntries:
+  - Name: Cube_LOD
+    PrefabReference:
+      m_AssetGUID: a243ca55ce2dfd841b4233aa720d14a5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Cube_LOD (2)
+    PrefabReference:
+      m_AssetGUID: a243ca55ce2dfd841b4233aa720d14a5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 16.57, y: 0, z: 12.57}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Cube_LOD (1)
+    PrefabReference:
+      m_AssetGUID: a243ca55ce2dfd841b4233aa720d14a5
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 10.01, y: 0, z: 0}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Sphere_LOD
+    PrefabReference:
+      m_AssetGUID: 0dde2d3d0f35d2c4f90aa85e6fca64e8
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 0, y: 0, z: 2}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Sphere_LOD (2)
+    PrefabReference:
+      m_AssetGUID: 0dde2d3d0f35d2c4f90aa85e6fca64e8
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 0, y: 0, z: 27.71}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Sphere_LOD (1)
+    PrefabReference:
+      m_AssetGUID: 0dde2d3d0f35d2c4f90aa85e6fca64e8
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 0, y: 0, z: -23.65}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: 0, y: 0, z: 3.544}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD (1)
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: -47.3, y: 0, z: 3.544}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD (2)
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: -47.3, y: 0, z: 61}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD (3)
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: -127.7, y: 0, z: 61}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD (4)
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: -127.7, y: 0, z: -53.1}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  - Name: Capsule_LOD (5)
+    PrefabReference:
+      m_AssetGUID: 1f50e5106345f7f4db5411e16ee561e4
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_EditorAssetChanged: 0
+    Position: {x: -127.7, y: 0, z: -91.7}
+    Rotation: {x: -0, y: 0, z: 0}
+    Scaling: {x: 1, y: 1, z: 1}
+    Tag: Building
+    HasLodOverride: 0
+    LodOverride: 0
+    HasCullingDistance: 1
+    CullingDistance: 180
+    LayerIndex: 0
+  sizeTier: 1
+  ChunkSizeWorld: 128
+  ChunkGridOrigin: {x: 0, y: 0, z: 0}
+  InitialLoadChunkRing: 2
