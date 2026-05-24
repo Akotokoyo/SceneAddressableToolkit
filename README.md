@@ -165,7 +165,18 @@ otherwise                →  staged load:
                             → deferred starts only after critical is fully complete
 ```
 
-After each successful spawn, the instance is automatically registered with `ZoneLODManager`.
+After each successful spawn, the instance is tracked internally and registered with `ZoneLODManager`.
+
+**Public API:**
+
+```csharp
+// Load a zone at runtime (also called automatically on Start).
+spawnerManager.LoadZoneConfig(zoneConfig);
+
+// Release all spawned Addressable instances and clear LOD tracking.
+// Call this before loading the next zone (e.g. on door/portal transition).
+spawnerManager.UnloadZone();
+```
 
 ### ZoneLODManager
 
@@ -213,4 +224,3 @@ The `HasLodOverride` / `LodOverride` fields on `SpawnEntry` are reserved for fut
 
 - `HasLodOverride` / `LodOverride` runtime application is not yet implemented (see design note above).
 - Chunk loading is one-shot at scene start; dynamic streaming (load/unload as the player moves) is not yet implemented.
-- No built-in zone unloading — releasing Addressables handles on exit is left to the consumer.

@@ -14,6 +14,8 @@ public class SpawnerManager : MonoBehaviour
 
     [SerializeField] private int maxConcurrentAddressableLoads = 4; //0 min.
 
+    private readonly List<GameObject> _spawnedInstances = new();
+
     void Start()
     {
         if (zoneConfig == null)
@@ -28,6 +30,23 @@ public class SpawnerManager : MonoBehaviour
         }
 
         LoadZoneConfig(zoneConfig);
+    }
+
+    public void UnloadZone()
+    {
+        StopAllCoroutines();
+
+        foreach (GameObject instance in _spawnedInstances)
+        {
+            if (instance != null)
+            {
+                Addressables.ReleaseInstance(instance);
+            }
+        }
+
+        _spawnedInstances.Clear();
+        zoneLODManager?.ClearTrackedObjects();
+        zoneConfig = null;
     }
 
     public void LoadZoneConfig(ZoneConfig config)
@@ -163,6 +182,7 @@ public class SpawnerManager : MonoBehaviour
             instantiateObject.transform.localScale = entry.Scaling;
             instantiateObject.name = entry.Name;
 
+            _spawnedInstances.Add(instantiateObject);
             zoneLODManager?.RegisterSpawnedObject(instantiateObject, entry);
         }
     }
